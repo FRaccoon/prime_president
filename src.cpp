@@ -46,7 +46,6 @@ int draw_card();
 void computer_turn();
 bool auto_turn(Board &b, Hand &h, bool &d);
 // void ph(int n,int k,int t);
-//  void phx(int n,int k,int t);
 
 // 表示
 void display_top();
@@ -514,43 +513,7 @@ bool auto_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 		if(y==5) return;
 	}
 }
-
-void phx(int n, int k, int t) { // 全探索?
-	if(y==1) return ;
-	if(k==0) { // 1つの組み合わせに到達したので素数判定
-		long long p = 0;
-		for(int i=0;i<t;i++) { // numからpを作る
-			if(num[i]<10) p *= 10;
-			else p *= 100;
-			p += num[i]; // 末尾にnum_iを追加
-		}
-		if(prime(p) && p>board.get_n()) {
-			pl[0] = p;
-			y = 1;
-		}
-		return ;
-	}
-
-	for(int i=0;i<2*N;i++) { // k番目のnumを決める
-		if(pt[i]==0) continue;
-		if(flag[i]) continue;
-
-		flag[i] = true;
-		if(pt[i]==14) { // ジョーカーの処理
-			for(int j=1;j<=13;j++) {
-				num[k-1] = j; // numを1~13に
-				phx(n, k-1, t); // 再帰
-				if(y==1) return ;
-			}
-		}else {
-			num[k-1] = pt[i];
-			phx(n, k-1, t);// 再帰
-			if(y==1) return ;
-		}
-		flag[i] = false;
-
-	}
-}*/
+*/
 
 
 

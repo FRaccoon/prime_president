@@ -1,8 +1,3 @@
-/*
-todo :
-  - namespace
-  - status(enum)
-*/
 
 #include "src.hpp"
 

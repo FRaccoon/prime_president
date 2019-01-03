@@ -71,7 +71,6 @@ extern int draw_card();
 extern void computer_turn();
 extern bool auto_turn(Board &b, Hand &h, bool &d);
 // extern void ph(int n,int k,int t);
-// extern void phx(int n,int k,int t);
 
 // 表示
 extern void display_top();

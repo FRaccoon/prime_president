@@ -64,13 +64,15 @@ extern bool manual_turn();
 extern bool composite_num_put();
 
 // 山札操作
+extern bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d);
 extern void draw_cards_n(Hand &h, int n, bool d);
 extern int draw_card();
 
 // 自動操作関係
 extern void computer_turn();
 extern bool auto_turn(Board &b, Hand &h, bool &d);
-// extern void ph(int n,int k,int t);
+extern bool find_prime(std::vector<char> l, int n, int b, std::vector<char> &v, std::vector<int> &jl);
+extern bool dfs(std::vector<char> &l, int n, int b, std::vector<char> &v, std::vector<int> &jl, std::vector<bool> &f, int k);
 
 // 表示
 extern void display_top();

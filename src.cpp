@@ -39,13 +39,15 @@ bool manual_turn(Board &b, Hand &h, bool &d);
 bool composite_num_put();
 
 // 山札操作
+bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl);
 void draw_cards_n(Hand &h, int n, bool d);
 int draw_card();
 
 // 自動操作
 void computer_turn();
 bool auto_turn(Board &b, Hand &h, bool &d);
-// void ph(int n,int k,int t);
+bool find_prime(std::vector<char> l, int n, int b, std::vector<char> &v, std::vector<int> &jl);
+bool dfs(std::vector<char> &l, int n, int b, std::vector<char> &v, std::vector<int> &jl, std::vector<bool> &f, int k);
 
 // 表示
 void display_top();
@@ -61,7 +63,7 @@ void main_loop();
 
 bool prime(long long p) { // 素数判定
 	if(p < 2) return false;
-	if(p==57) return true; // 57は素数(概念)
+	// if(p==57) return true; // 57は素数
 
 	for(int i=2;i*i<=p;i++) {
 		if(p%i==0) return false;
@@ -173,9 +175,29 @@ long long list_to_num(std::vector<char> &v, std::vector<int> &jl) { // jl : joke
 
 
 
-bool put_to_board(Board &b, Hand &h, std::vector<int> &v) { // 場に出す処理(未実装)
-	long long p = 0;
-	return true;
+bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d) { // 場に出す処理
+
+	long long p = list_to_num(v, jl);
+
+	if(p <= b.get_n()) {
+		update_log(std::to_string(p) + " は場の数以下です");
+		return false;
+	}else if(p==57) {
+		for(auto&& c : v) h.put(c);
+		update_log("グロタンカット");
+		b.reset();
+		return false;
+	}else if(!prime(p)) {
+		update_log(std::to_string(p) + " は素数ではありません");
+		draw_cards_n(h, v.size(), d);
+		b.reset();
+		return true;
+	}else {
+		update_log(std::to_string(p) + " を出した");
+		for(auto&& c : v) h.put(c);
+		b.set(p, v.size());
+		return true;
+	}
 }
 
 void draw_cards_n(Hand &h, int n, bool d) { // draw to hand d: disp
@@ -354,30 +376,7 @@ bool manual_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 			}
 		}
 
-		long long p = list_to_num(v, jl);
-
-		if(p <= b.get_n()) {
-			update_log(std::to_string(p) + " は場の数以下です");
-			return false;
-		}else if(!prime(p)) {
-			update_log(std::to_string(p) + " は素数ではありません");
-			draw_cards_n(h, n, d);
-			b.reset();
-			return true;
-		}else {
-			update_log(std::to_string(p) + " を出した");
-
-			for(auto&& c : v) h.put(c);
-
-			if(p == 57) {
-				update_log("グロタンカット");
-				b.reset();
-				return false;
-			}else {
-				b.set(p, n);
-				return true;
-			}
-		}
+		return put_to_board(b, h, v, jl, d);
 
 	}else if(st == 1) { // 合成数出し
 		return composite_num_put();
@@ -399,121 +398,88 @@ bool manual_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 		return false;
 	}
 
-	update_log("error 予期しない状態");
 	return false;
 }
 
 
 
+bool find_prime(std::vector<char> l, int n, int b, std::vector<char> &v, std::vector<int> &jl) { // l から n 枚を使った b 以上の素数を作り v, jl に代入
+	std::vector<bool> f(n);
+	return dfs(l, n, b, v, jl, f, 0);
+}
+
+bool dfs(std::vector<char> &l, int n, int b, std::vector<char> &v, std::vector<int> &jl, std::vector<bool> &f, int k) {
+	if(n == k) {
+		long long p = list_to_num(v, jl);
+		return (b < p && prime(p));
+	}
+
+	for(int i=0;i<l.size();i++) {
+		if(f[i])continue;
+
+		f[i] = true;
+		v.push_back(l[i]);
+
+		if(cton(l[i]) == 0) {
+			for(int j=1;j<=Hand::type;j++) {
+				jl.push_back(j);
+				if(dfs(l, n, b, v, jl, f, k+1))
+					return true;
+				jl.pop_back();
+			}
+		}else {
+			if(dfs(l, n, b, v, jl, f, k+1))
+				return true;
+		}
+
+		v.pop_back();
+		f[i] = false;
+	}
+
+	return false;
+}
+
 bool auto_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 
 	display_table();
 
-	int t = h.total();
-	if(t < b.get_c()) {
+	if(h.total() < b.get_c()) {
 		if(f) {
 			draw_cards_n(h, 1, d);
 			f = false;
+			return false;
 		}else {
 			update_log("pass");
 			b.reset();
+			return true;
 		}
 	}
 
-/*
-	int ta = 4;
-	if(b.get_c()==0) {
-		ta = std::min(4, h.total());
+	int n;
+	if(b.get_c() == 0) {
+		n = rand()%4 + 1;
+		if(h.total() < n) n = h.total();
+	}else n = b.get_c();
 
-		pl[0] = 0;
-		y = 0;
-		ph(cc, ta, ta);
-		if(pl[0]>0) {
-			update_log("com : " + std::to_string(pl[0]) + " を出した");
-			board.set(pl[0], ta);
-			cc -= board.get_c();
-			for(int k=0;k<board.get_c();k++) {
-				for(int j=0;j<2*N;j++) {
-					if(ct[j]==num[k]) {
-						ct[j] = 0;
-						break;
-					}
-				}
-			}
-			return true;
-		}
-		for(int i=0;;i++) {
-			if(ct[i]==0) {
-				ct[i] = rand() % 13 + 1;
-				break;
-			}
-		}
-		cc++;
-		update_log("com : パス");
+	std::vector<char> v;
+	std::vector<int> jl;
+
+	if(find_prime(h.card_list(), n, b.get_n(), v, jl)) {
+		return put_to_board(b, h, v, jl, d);
 	}else {
-		pl[0] = 0;
-		y = 0;
-		ph(cc, board.get_c(), board.get_c());
-		if(pl[0]>board.get_n()) {
-			update_log("com : " + std::to_string(pl[0]) + "を出した");
-			board.set(pl[0], board.get_c());
-			cc -= board.get_c();
-			for(int k=0;k<board.get_c();k++) {
-				for(int j=0;j<40;j++) {
-					if(ct[j]==num[k]) {
-						ct[j] = 0;
-						break;
-					}
-				}
-			}
-			return true;
+		if(f) {
+			draw_cards_n(h, 1, d);
+			f = false;
+			return false;
 		}else {
-			update_log("com : パス");
-			board.reset();
-			cph.draw(draw_card());
+			update_log("pass");
+			b.reset();
+			return true;
 		}
-	}*/
-	return true;
-}
-
-/*void ph(int n, int k, int t) { // 全探索?
-	if(y==5) return;
-	if(k==0) { // 1つの組み合わせに到達したので素数判定
-		long long p = 0;
-		for(int i=0;i<t;i++) { // numからpを作る
-			if(num[i]<10) p *= 10;
-			else p *= 100;
-			p += num[i]; // 末尾にnum_iを追加
-		}
-		if(prime(p)) {
-			if((pl[0]>board.get_n() && y==0) || (p>pl[0])) {
-				pl[0] = p;
-				y++;
-			}
-		}
-		return ;
 	}
 
-	for(int i=0;i<cc;i++) { // k番目のnumを決める
-		if(ct[i]==0)continue;
-		if(flag[i])continue;
-
-		flag[i] = true;
-		if(ct[i]==14){ // ジョーカーの処理
-			for(int j=1;j<=13;j++) {
-				num[k-1] = j; // numを1~13に
-				ph(n, k-1, t); // 再帰
-			}
-		}else{
-			num[k-1] = ct[i];
-			ph(n, k-1, t);// 再帰
-		}
-		flag[i] = false;
-
-		if(y==5) return;
-	}
+	return false;
 }
-*/
 
 
 
@@ -522,12 +488,16 @@ void player_turn() {
 	update_log("your turn");
 
 	bool f = true; // d : draw flag
-	while(!manual_turn(board, player[0], disp[0], f)) { // 行動が完了するまで繰り返す
+	while(!manual_turn(board, player[0], disp[0], f)) {
 		if(player[0].total() == 0) break;
 	}
+	/*while(!auto_turn(board, player[0], disp[0], f)) {
+		if(player[0].total() == 0) break;
+	}*/
 
 	if(player[0].total() == 0) {
 		display_table();
+		Red();
 		printw("you win! (press any key for exit)");
 		mygetch();
 		myexit(0);
@@ -539,15 +509,16 @@ void computer_turn() {
 	update_log("computer turn");
 
 	bool f = true; // d : draw flag
-	while(!manual_turn(board, player[1], disp[1], f)) { // 行動が完了するまで繰り返す
+	while(!auto_turn(board, player[1], disp[1], f)) {
 		if(player[1].total() == 0) break;
 	}
-	/*while(!auto_turn(board, player[1], disp[1], f)) { // 行動が完了するまで繰り返す
+	/*while(!manual_turn(board, player[1], disp[1], f)) {
 		if(player[1].total() == 0) break;
 	}*/
 
 	if(player[1].total() == 0) {
 	    display_table();
+		Blue();
 		printw("you lose... (press any key for exit)");
 		mygetch();
 		myexit(0);
@@ -606,7 +577,8 @@ void top_menu() {
 	// 手札の設定
 	if(m==0) { // 通常モード(ランダム)
 		disp[0] = true;
-		disp[1] = true; // false;
+		disp[1] = false;
+		//disp[1] = true;
 		for(int i=0;i<2;i++) {
 			update_log(name[i]);
 			draw_cards_n(player[i], N, disp[i]);

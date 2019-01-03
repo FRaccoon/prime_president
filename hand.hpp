@@ -11,11 +11,11 @@ constexpr bool ul = true; // upper, lower
 
 class Hand { // 手札の情報
 	private:
-	static const int type = 13;
 	std::vector<int>card;
 	int cnt;
 
 	public:
+	static const int type = 13;
 	Hand() : card(type+1), cnt(0) {}
 	Hand(std::vector<int> v);
 	Hand(std::vector<char> v);
@@ -32,7 +32,7 @@ class Hand { // 手札の情報
 	int total();
 	void reset();
 	bool subset(Hand h);
-	std::vector<int> card_list();
+	std::vector<char> card_list();
 	void display(bool s);
 };
 

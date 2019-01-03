@@ -53,21 +53,21 @@ bool Hand::subset(Hand h) {
 }
 
 
-std::vector<int> Hand::card_list() {
-	std::vector<int> v(cnt);
+std::vector<char> Hand::card_list() {
+	std::vector<char> v(cnt);
 	v.reserve(cnt);
 	for(int i=0,j=0;i<=type;i++) {
 		for(int k=0;k<count(i);k++)
-			v[j++] = i;
+			v[j++] = ntoc(i);
 	}
 	return v;
 }
 
 void Hand::display(bool s) { // s: show
 	for(auto &&c : card_list()) {
-		printw(" %c ", (s ? ntoc(c) : '*') );
+		printw(" %c", (s ? c : '*') );
 	}
-	printw("(%d枚)\n", total());
+	printw(" (%d枚)\n", total());
 }
 
 char ntoc(int n) { // 数値を文字に変換 f: 小or大文字

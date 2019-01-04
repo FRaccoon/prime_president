@@ -16,6 +16,7 @@ class Hand { // 手札の情報
 
 	public:
 	static const int type = 13;
+	static const int joker = 0;
 	Hand() : card(type+1), cnt(0) {}
 	Hand(std::vector<int> v);
 	Hand(std::vector<char> v);

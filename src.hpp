@@ -27,10 +27,6 @@ constexpr int D = 15;
 
 
 
-// extern long long pl[2];
-// extern int y, logc, num[100];
-// extern bool flag[100];
-
 extern Hand player[2]; // player, computer
 
 extern Board board; // 場の数

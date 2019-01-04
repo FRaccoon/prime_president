@@ -1,10 +1,6 @@
 
 #include "src.hpp"
 
-// long long pl[2];
-// int y, logc, num[100];
-// bool flag[100];
-
 Hand player[2];
 
 Board board;
@@ -165,7 +161,7 @@ long long list_to_num(std::vector<char> &v, std::vector<int> &jl) { // jl : joke
 	const int l = v.size();
 	long long n = 0;
 	for(int i=0,j=0;i<l;i++) {
-		int m = (cton(v[i]) == 0 ? jl[j++] : cton(v[i]));
+		int m = (cton(v[i]) == Hand::joker ? jl[j++] : cton(v[i]));
 		for(int k = m;0 < k;k /= 10) n *= 10;
 		if(m==0) n *= 10;
 		else n += m;
@@ -215,7 +211,7 @@ void draw_cards_n(Hand &h, int n, bool d) { // draw to hand d: disp
 int draw_card() { // draw from stock　todo:引いたカードの情報を保持する
 	const int l = 53;
 	std::vector<int> stock(l);
-	stock[0] = stock[1] = 0;
+	stock[0] = stock[1] = Hand::joker;
 	for(int i=2;i<l;i++) {
 		stock[i] = (i+2)/4;
 	}
@@ -367,9 +363,9 @@ bool manual_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 			return false;
 		}
 
-		std::vector<int> jl(cs.count(0));
-		if(cs.count(0) > 0) {
-			for(int i=0;i<cs.count(0);i++) {
+		std::vector<int> jl(cs.count(Hand::joker));
+		if(cs.count(Hand::joker) > 0) {
+			for(int i=0;i<cs.count(Hand::joker);i++) {
 				display_table();
 				printw("jokerに数を入力（%d枚目）: ", i+1);
 				jl[i] = mygetint();
@@ -420,7 +416,7 @@ bool dfs(std::vector<char> &l, int n, int b, std::vector<char> &v, std::vector<i
 		f[i] = true;
 		v.push_back(l[i]);
 
-		if(cton(l[i]) == 0) {
+		if(cton(l[i]) == Hand::joker) {
 			for(int j=1;j<=Hand::type;j++) {
 				jl.push_back(j);
 				if(dfs(l, n, b, v, jl, f, k+1))

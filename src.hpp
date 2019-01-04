@@ -60,9 +60,9 @@ extern bool manual_turn();
 extern bool composite_num_put();
 
 // 山札操作
-extern bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d);
+extern bool put_prime_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d);
 extern void draw_cards_n(Hand &h, int n, bool d);
-extern int draw_card();
+extern char draw_card();
 
 // 自動操作関係
 extern void computer_turn();

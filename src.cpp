@@ -35,9 +35,9 @@ bool manual_turn(Board &b, Hand &h, bool &d);
 bool composite_num_put();
 
 // 山札操作
-bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl);
+bool put_prime_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl);
 void draw_cards_n(Hand &h, int n, bool d);
-int draw_card();
+char draw_card();
 
 // 自動操作
 void computer_turn();
@@ -171,7 +171,7 @@ long long list_to_num(std::vector<char> &v, std::vector<int> &jl) { // jl : joke
 
 
 
-bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d) { // 場に出す処理
+bool put_prime_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl, bool d) { // 場に出す処理
 
 	long long p = list_to_num(v, jl);
 
@@ -199,21 +199,21 @@ bool put_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int> &jl,
 void draw_cards_n(Hand &h, int n, bool d) { // draw to hand d: disp
 	std::string res{};
 	for(int i=0;i<n;i++) {
-		int r = draw_card();
-		h.draw(r);
-		std::string c{(d ? ntoc(r) : '*'), ' '};
-		res += c;
+		char c = draw_card();
+		h.draw(c);
+		std::string s{(d ? c : '*'), ' '};
+		res += s;
 	}
 	res += "を引いた";
 	update_log(res);
 }
 
-int draw_card() { // draw from stock　todo:引いたカードの情報を保持する
-	const int l = 53;
-	std::vector<int> stock(l);
-	stock[0] = stock[1] = Hand::joker;
+char draw_card() { // draw from stock　todo:引いたカードの情報を保持する
+	const int l = 2 + Hand::type * 4; // 53;
+	std::vector<char> stock(l);
+	stock[0] = stock[1] = ntoc(Hand::joker);
 	for(int i=2;i<l;i++) {
-		stock[i] = (i+2)/4;
+		stock[i] = ntoc((i+2)/4);
 	}
 	return stock[rand()%l];
 }
@@ -372,7 +372,7 @@ bool manual_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 			}
 		}
 
-		return put_to_board(b, h, v, jl, d);
+		return put_prime_to_board(b, h, v, jl, d);
 
 	}else if(st == 1) { // 合成数出し
 		return composite_num_put();
@@ -461,7 +461,7 @@ bool auto_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 	std::vector<int> jl;
 
 	if(find_prime(h.card_list(), n, b.get_n(), v, jl)) {
-		return put_to_board(b, h, v, jl, d);
+		return put_prime_to_board(b, h, v, jl, d);
 	}else {
 		if(f) {
 			draw_cards_n(h, 1, d);

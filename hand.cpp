@@ -71,17 +71,17 @@ void Hand::display(bool s) { // s: show
 }
 
 char ntoc(int n) { // 数値を文字に変換 f: 小or大文字
-	if(n == 0) return 'X' - 'A' + (ul ? 'A' : 'a');
+	if(n == Hand::joker) return 'X' - 'A' + ul;
 	else if(1 <= n && n <= 9) return n + '0';
-	else if(n == 10) return 'T' - 'A' + (ul ? 'A' : 'a');
-	else if(n == 11) return 'J' - 'A' + (ul ? 'A' : 'a');
-	else if(n == 12) return 'Q' - 'A' + (ul ? 'A' : 'a');
-	else if(n == 13) return 'K' - 'A' + (ul ? 'A' : 'a');
+	else if(n == 10) return 'T' - 'A' + ul;
+	else if(n == 11) return 'J' - 'A' + ul;
+	else if(n == 12) return 'Q' - 'A' + ul;
+	else if(n == 13) return 'K' - 'A' + ul;
 	else return '?';
 }
 
 int cton(char c) { // 文字を数値に変換
-	if(c == 'x' || c == 'X') return 0;
+	if(c == 'x' || c == 'X') return Hand::joker;
 	else if('1' <= c && c <= '9') return c - '0';
 	else if(c == 't' || c == 'T') return 10;
 	else if(c == 'j' || c == 'J') return 11;

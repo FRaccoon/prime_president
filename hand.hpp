@@ -7,7 +7,7 @@
 #include <ncurses.h>
 // #include <locale.h>
 
-constexpr bool ul = true; // upper, lower
+constexpr char ul = 'A'; // upper, lower
 
 class Hand { // 手札の情報
 	private:

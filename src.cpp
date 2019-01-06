@@ -15,7 +15,7 @@ std::vector<std::string> logs{""}; // ログ
 // 入力補助
 bool selector(const std::vector<std::string> list, int &p);
 bool select_num(int s, int e, int &p);
-int input_cards(std::vector<char> &v);
+bool input_cards(std::vector<char> &v, int n);
 
 // 入出力を変換
 long long list_to_num(std::vector<char> &v, std::vector<int> &jl);
@@ -143,16 +143,18 @@ bool select_num(int s, int e, int &p) {
 	return b;
 }
 
-int input_cards(std::vector<char> &v) {
+bool input_cards(std::vector<char> &v, int n) {
 	for(auto&& c : v) printw(" %c", c);
 	refresh();
 
 	int key = mygetch();
 	if((key == KEY_BACKSPACE || key == 127) && 0 < v.size())
 		v.pop_back();
-	else if(0 <= cton( (char)key ))
+	else if(key == '\n' && v.size() == n)
+		return true;
+	else if(0 <= cton( (char)key ) && v.size() < n)
 		v.push_back( (char)key );
-	return key;
+	return false;
 }
 
 
@@ -179,7 +181,7 @@ bool put_prime_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int
 		update_log(std::to_string(p) + " は場の数以下です");
 		return false;
 	}else if(p==57) {
-		for(auto&& c : v) h.put(c);
+		h.put(v);
 		update_log("グロタンカット");
 		b.reset();
 		return false;
@@ -190,7 +192,7 @@ bool put_prime_to_board(Board &b, Hand &h, std::vector<char> &v, std::vector<int
 		return true;
 	}else {
 		update_log(std::to_string(p) + " を出した");
-		for(auto&& c : v) h.put(c);
+		h.put(v);
 		b.set(p, v.size());
 		return true;
 	}
@@ -350,9 +352,7 @@ bool manual_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 		while(true) {
 			display_table();
 			printw("カードを入力(%d枚) :", n);
-			int k = input_cards(v);
-			if(v.size() == n && k == '\n') break;
-			while(n < v.size())v.pop_back();
+			if(input_cards(v, n)) break;
 		}
 
 		Hand cs(v);
@@ -453,8 +453,8 @@ bool auto_turn(Board &b, Hand &h, bool d, bool &f) { // f : draw flag
 
 	int n;
 	if(b.get_c() == 0) {
-		n = rand()%4 + 1;
-		if(h.total() < n) n = h.total();
+		if(h.total() <= 4) n = h.total();
+		else n = rand()%3 + 2;
 	}else n = b.get_c();
 
 	std::vector<char> v;
@@ -584,12 +584,12 @@ void top_menu() {
 		disp[1] = true;
 		for(int i=0;i<2;i++) {
 			std::vector<char> v;
-			while(v.size()<N) {
+			while(true) {
 				display_top();
 				printw("%sの手札を入力(%d枚) :", name[i].c_str(), N);
-				input_cards(v);
+				if(input_cards(v, N)) break;
 			}
-			for(int j=0;j<N;j++) player[i].draw(v[j]);
+			player[i].draw(v);
         }
 	}else {
 		myexit(0);

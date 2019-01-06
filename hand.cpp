@@ -4,11 +4,11 @@
 char ntoc(int n);
 int cton(char c);
 
-Hand::Hand(std::vector<int> v) : card(type+1), cnt(0) {
+Hand::Hand(std::vector<int> &v) : card(type+1), cnt(0) {
 	for(auto &&c : v) draw(c);
 }
 
-Hand::Hand(std::vector<char> v) : card(type+1), cnt(0) {
+Hand::Hand(std::vector<char> &v) : card(type+1), cnt(0) {
 	for(auto &&c : v) draw(c);
 }
 
@@ -28,27 +28,34 @@ void Hand::put(int c) {
 }
 
 int Hand::count(int c) {
-	return (0 <= c && c <= type ? card[c] : -1);
+	return ((1 <= c && c <= type) || c==joker ? card[c] : -1);
 }
 
 void Hand::draw(char c) { draw(cton(c)); }
 void Hand::put(char c) { put(cton(c)); }
 int Hand::count(char c) { return count(cton(c)); }
 
+void Hand::draw(std::vector<char> &v) { for(auto&& c : v) draw(c); }
+void Hand::put(std::vector<char> &v)  { for(auto&& c : v) draw(c); }
+
+void Hand::draw(std::vector<int> &v) { for(auto&& c : v) draw(c); }
+void Hand::put(std::vector<int> &v)  { for(auto&& c : v) draw(c); }
 
 int Hand::total() {
 	return cnt;
 }
 
 void Hand::reset() {
-	for(int i=0;i<=type;i++)card[i] = 0;
+	for(int i=1;i<=type;i++)card[i] = 0;
+	card[joker] = 0;
 	cnt = 0;
 }
 
 bool Hand::subset(Hand h) {
-	for(int i=0;i<=type;i++) {
+	for(int i=1;i<=type;i++) {
 		if(count(i) < h.count(i))return false;
 	}
+	if(count(joker) < h.count(joker))return false;
 	return true;
 }
 
@@ -56,10 +63,13 @@ bool Hand::subset(Hand h) {
 std::vector<char> Hand::card_list() {
 	std::vector<char> v(cnt);
 	v.reserve(cnt);
-	for(int i=0,j=0;i<=type;i++) {
+	int j=0;
+	for(int i=1;i<=type;i++) {
 		for(int k=0;k<count(i);k++)
 			v[j++] = ntoc(i);
 	}
+	for(int k=0;k<count(joker);k++)
+		v[j++] = ntoc(joker);
 	return v;
 }
 

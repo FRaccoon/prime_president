@@ -41,7 +41,7 @@ extern std::vector<std::string> logs; // ログ
 // 入力補助
 extern bool selector(const std::vector<std::string> list, int &p);
 extern bool select_num(int s, int e, int &p);
-extern int input_cards(std::vector<char> &v);
+extern bool input_cards(std::vector<char> &v, int n);
 
 // 入出力を変換
 extern long long list_to_num(std::vector<char> &v, std::vector<int> &jl);
